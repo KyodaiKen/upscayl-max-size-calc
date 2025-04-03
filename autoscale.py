@@ -79,7 +79,7 @@ while ((w+1)*f*((w+1)/a)*f*bpp<=maxSz):
 w=math.floor(w)
 h=math.floor(h)
 
-print(f"=> Determined new width and height: {w} x {h}")
+print(f"=> Determined new width and height: {w} x {h}, final size will be {w*4} x {h*4}")
 
 ow = img.width
 oh = img.height
