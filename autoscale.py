@@ -1,3 +1,4 @@
+import datetime
 import argparse
 import math
 from termcolor import colored
@@ -7,6 +8,8 @@ import wand.image
 from wand.api import library
 from ctypes import c_void_p, c_size_t
 from wand_utils import get_bytes_per_channel
+
+start_datetime = datetime.datetime.now()
 
 parser = argparse.ArgumentParser(
     prog="autoresize",
@@ -20,20 +23,20 @@ parser.add_argument('--no-auto-upscayl', action="store_true", help="Disables the
 parser.add_argument("-m", "--upscayl-model", help="Select the upscayl model (default=digital-art-4x)", type=str, default="digital-art-4x", required=False)
 parser.add_argument("-ttap", "--upscayl-enable-tta-pre", action="store_true", help="Enable TTA mode for pre-upscayle")
 parser.add_argument("-ttaf", "--upscayl-enable-tta-fin", action="store_true", help="Enable TTA mode for final upscayl")
-parser.add_argument("-uq", "--upscayl-quiet", action="store_true", help="Disables the output of Upscayl", default=True)
+parser.add_argument("-uv", "--upscayl-verbose", action="store_true", help="Enables the output of Upscayl")
 parser.add_argument("--no-jpegli", action="store_true", help="Disables the automatic recompressing using JPEGLI (requires cjpegli to be in PATH)")
 parser.add_argument("-jq", "--jpegli-quality", help="JPEGLI quality setting (default=84)", type=str, default=84, required=False)
 parser.add_argument("-jp", "--jpegli-progressive", help="JPEGLI progressive mode (default=0)", type=str, default=0, required=False)
 parser.add_argument("-jy", "--jpegli-yuv-format", help="JPEGLI YUV format (default=420)", type=str, default="420", required=False)
-parser.add_argument("--jpegli-quiet", action="store_true", help="Disables the output of cjpegli", default=True)
+parser.add_argument("-jv", "--jpegli-verbose", action="store_true", help="Enables the output of cjpegli")
 args = parser.parse_args()
 parsed_args_dict = vars(args)
 
 # Print args
-print(colored("Autoscale for upscayl! =============================================", 'light_cyan'))
+print(colored("Autoscale for upscayl! ==== ", 'light_cyan') + colored(f"START: {start_datetime} ", 'light_yellow') + colored("=================", 'light_cyan'))
 print("=> Parameters used:")
 for key, value in parsed_args_dict.items():
-    key = key.replace("_", " ").title()
+    key = key.upper()
     print(f"{key:>24}: {value}")
 print("")
 
@@ -123,7 +126,7 @@ if w*h>ow*oh:
                 ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1 -x"
             else:
                 ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1"
-            if args.upscayl_quiet:
+            if args.upscayl_verbose == False:
                 with open(os.devnull, 'w') as fnull:
                     ret_code = subprocess.call(ucmd, shell=True, stdout=fnull, stderr=fnull)
             else:
@@ -170,7 +173,7 @@ if args.upscayl_enable_tta_fin:
     ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1 -x"
 else:
     ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1"
-    if args.upscayl_quiet:
+    if args.upscayl_verbose == False:
         with open(os.devnull, 'w') as fnull:
             ret_code = subprocess.call(ucmd, shell=True, stdout=fnull, stderr=fnull)
     else:
@@ -188,7 +191,7 @@ if args.no_jpegli == False:
     jifn = uofn
     jofn = args.filename.rpartition('.')[0] + '_upscayl.jpg'
     jcmd = f"cjpegli -q {args.jpegli_quality} -p {args.jpegli_progressive} --chroma_subsampling={args.jpegli_yuv_format} \"{jifn}\" \"{jofn}\""
-    if args.jpegli_quiet:
+    if args.jpegli_verbose == False:
         with open(os.devnull, 'w') as fnull:
             ret_code = subprocess.call(jcmd, shell=True, stdout=fnull, stderr=fnull)
     else:
@@ -199,4 +202,7 @@ if args.no_jpegli == False:
         print(colored(f"(x) JPEGLI error! Command: {jcmd}", 'light_red'))
         os._exit(0x126)
 
-print("Finished.")
+datetime_end = datetime.datetime.now()
+print(colored(f"END ..... : {datetime_end}", 'light_green'))
+print(colored(f"TIME TAKEN: {datetime_end - start_datetime}", 'light_green'))
+print(colored("Finished.", 'light_green'))
