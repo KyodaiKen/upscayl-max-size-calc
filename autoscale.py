@@ -12,7 +12,7 @@ from wand_utils import get_bytes_per_channel
 start_datetime = datetime.datetime.now()
 
 parser = argparse.ArgumentParser(
-    prog="autoresize",
+    prog="autoscale",
     description="Resizes an image to the maximum size to run upscayl on"
 )
 parser.add_argument("filename", help="Input File")
