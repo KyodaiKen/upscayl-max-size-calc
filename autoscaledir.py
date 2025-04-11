@@ -31,6 +31,7 @@ if args.batch == False:
 
     print("=> Building file list")
 file_list = find_files(args.path, args.pattern, args.recursive)
+num_files = len(file_list)
 
 if args.upscayl_parameters != None:
     up_parms = args.upscayl_parameters + " "
@@ -42,13 +43,13 @@ if args.batch:
     print("@ECHO OFF")
     for file in file_list:
         f+=1
-        percent = (f-1)/len(file_list)
-        print("ECHO " + f"=> Processing file {f} / {len(file_list)}, {percent:.2%} done.")
+        percent = (f-1)/num_files
+        print("ECHO " + f"=> Processing file {f} / {num_files}, {percent:.2%} done.")
         print(f"{args.upscayl_path} {up_parms}\"{file}\"")
-    print("ECHO " + f"=> Processed file {f} / {len(file_list)}, 100% done.")
+    print("ECHO " + f"=> Processed file {f} / {num_files}, 100% done.")
     exit(0)
 
-print(f"=> Found {len(file_list)} files.")
+print(f"=> Found {num_files} files.")
 
 start_datetime = datetime.datetime.now()
 print(colored(f"=> START: {start_datetime}"), 'light_yellow')
@@ -56,10 +57,10 @@ print(colored(f"=> START: {start_datetime}"), 'light_yellow')
 f=0
 for file in file_list:
     f+=1
-    percent = (f-1)/len(file_list)
+    percent = (f-1)/num_files
     current_time = datetime.datetime.now()
-    ETL = estimate_time_left(start_datetime, f-1, len(file_list))
-    print(colored(f"=> Processing file {f} / {len(file_list)}, {percent:.2%} done.", 'light_cyan') + " " + colored(f"Estimated time left: {ETL}",'light_magenta'))
+    ETL = estimate_time_left(start_datetime, f-1, num_files)
+    print(colored(f"=> Processing file {f} / {num_files}, {percent:.2%} done.", 'light_cyan') + " " + colored(f"Estimated time left: {ETL}",'light_magenta'))
     command = f"{args.upscayl_path} {up_parms}\"{file}\""
     if args.simulation:
         print(command)
@@ -68,7 +69,7 @@ for file in file_list:
         if ret_code > 0:
             print(colored(f"The process returned the error code {ret_code}", 'light_red'))
 
+print(colored(f"=> Processed file {f} / {num_files}, 100.00% done.", 'light_cyan'))
 datetime_end = datetime.datetime.now()
 print(colored(f"JOB END . : {datetime_end}", 'light_green'))
 print(colored(f"TIME TAKEN: {datetime_end - start_datetime}", 'light_green'))
-print(colored("=> Finished file list.", 'light_blue'))
