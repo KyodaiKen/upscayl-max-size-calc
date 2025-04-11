@@ -3,6 +3,7 @@ import datetime
 from directory_utils import find_files
 from termcolor import colored
 import subprocess
+from time_utils import estimate_time_left
 
 parser = argparse.ArgumentParser(
     prog="autoscaledir",
@@ -42,9 +43,9 @@ if args.batch:
     for file in file_list:
         f+=1
         percent = (f-1)/len(file_list)
-        print("ECHO " + f"=> Processing file {f} / {len(file_list)}, {percent:.2%} percent done.")
+        print("ECHO " + f"=> Processing file {f} / {len(file_list)}, {percent:.2%} done.")
         print(f"{args.upscayl_path} {up_parms}\"{file}\"")
-    print("ECHO " + f"=> Processed file {f} / {len(file_list)}, 100% percent done.")
+    print("ECHO " + f"=> Processed file {f} / {len(file_list)}, 100% done.")
     exit(0)
 
 print(f"=> Found {len(file_list)} files.")
@@ -56,7 +57,9 @@ f=0
 for file in file_list:
     f+=1
     percent = (f-1)/len(file_list)
-    print(colored(f"=> Processing file {f} / {len(file_list)}, {percent:.2%} percent done.", 'light_cyan'))
+    current_time = datetime.datetime.now()
+    ETL = estimate_time_left(start_datetime, f-1, len(file_list))
+    print(colored(f"=> Processing file {f} / {len(file_list)}, {percent:.2%} done.", 'light_cyan') + " " + colored(f"Estimated time left: {ETL}",'light_magenta'))
     command = f"{args.upscayl_path} {up_parms}\"{file}\""
     if args.simulation:
         print(command)
@@ -68,4 +71,4 @@ for file in file_list:
 datetime_end = datetime.datetime.now()
 print(colored(f"JOB END . : {datetime_end}", 'light_green'))
 print(colored(f"TIME TAKEN: {datetime_end - start_datetime}", 'light_green'))
-print(colored("Finished file list.", 'light_green'))
+print(colored("=> Finished file list.", 'light_blue'))
