@@ -20,6 +20,7 @@ parser.add_argument("-f", "--scale-factor", help="Desired enlargement factor (de
 parser.add_argument("-sr", "--sharpen-radius", help="Sharpen radius (default=0.8)", type=float, default=0.8, required=False)
 parser.add_argument("-ss", "--sharpen-sigma", help="Sharpen sigma (default=33)", type=float, default=33.0, required=False)
 parser.add_argument('--no-auto-upscayl', action="store_true", help="Disables the automatic upscaling using upscayl (requires upscayl-bin in PATH)")
+parser.add_argument("-d", "--upscayl-model-dir", help="Specify the upscayl model directory", type=str, default="auto", required=False)
 parser.add_argument("-m", "--upscayl-model", help="Select the upscayl model (default=digital-art-4x)", type=str, default="digital-art-4x", required=False)
 parser.add_argument("-ttap", "--upscayl-enable-tta-pre", action="store_true", help="Enable TTA mode for pre-upscayle")
 parser.add_argument("-ttaf", "--upscayl-enable-tta-fin", action="store_true", help="Enable TTA mode for final upscayl")
@@ -39,6 +40,14 @@ for key, value in parsed_args_dict.items():
     key = key.upper()
     print(f"{key:>24}: {value}")
 print("")
+
+# Check platform and adjust upscayl-model-dir if it's 'auto'
+model_dir = args.upscayl_model_dir
+if os.name == 'nt' and model_dir == "auto":
+    model_dir = "..\\models"
+else:
+    model_dir = "/opt/Upscayl/resources/models"
+
 
 # Tell Python's wand library about the MagickWand Compression Quality (not Image's Compression Quality)
 library.MagickSetCompressionQuality.argtypes = [c_void_p, c_size_t]
@@ -123,9 +132,9 @@ if w*h>ow*oh:
             print(f"=> Running Upscayl iteration {i}...")
             uofn = args.filename.rpartition('.')[0] + f'_utmp{i}.png'
             if args.upscayl_enable_tta_pre:
-                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1 -x"
+                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1 -x"
             else:
-                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1"
+                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1"
             if args.upscayl_verbose == False:
                 with open(os.devnull, 'w') as fnull:
                     ret_code = subprocess.call(ucmd, shell=True, stdout=fnull, stderr=fnull)
@@ -170,9 +179,9 @@ print(f"=> Upscayling to maximum size of {w*4} x {h*4}...")
 uifn = args.filename.rpartition('.')[0] + '_tmp.png'
 uofn = args.filename.rpartition('.')[0] + '_upscayl.png'
 if args.upscayl_enable_tta_fin:
-    ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1 -x"
+    ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1 -x"
 else:
-    ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"..\\models\" -n {args.upscayl_model} -s {f} -c 1"
+    ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1"
     if args.upscayl_verbose == False:
         with open(os.devnull, 'w') as fnull:
             ret_code = subprocess.call(ucmd, shell=True, stdout=fnull, stderr=fnull)
@@ -189,8 +198,9 @@ print(f"=> Written {uofn}")
 if args.no_jpegli == False:
     print(f"=> Recompressing the PNG with JPEGLI...")
     jifn = uofn
-    jofn = args.filename.rpartition('.')[0] + '_upscayl.jpg'
-    jcmd = f"cjpegli -q {args.jpegli_quality} -p {args.jpegli_progressive} --chroma_subsampling={args.jpegli_yuv_format} \"{jifn}\" \"{jofn}\""
+    jofn = args.filename.rpartition('.')[0] + '_upscayl.jpg'7
+    #cjxl and cjpegli have removed PNG support, subsequently the following line was changed to use image magick to pipe the png into cjpegli as ppm instead.
+    jcmd = f"magick \"{jifn}\" ppm:- | cjpegli - -q {args.jpegli_quality} -p {args.jpegli_progressive} --chroma_subsampling={args.jpegli_yuv_format} \"{jofn}\""
     if args.jpegli_verbose == False:
         with open(os.devnull, 'w') as fnull:
             ret_code = subprocess.call(jcmd, shell=True, stdout=fnull, stderr=fnull)
