@@ -88,7 +88,7 @@ while ((w+1)*f*((w+1)/a)*f*bpp<=maxSz):
 w=math.floor(w)
 h=math.floor(h)
 
-print(f"=> Determined new width and height: {w} x {h}, final size will be {w*4} x {h*4}")
+print(f"=> Determined new width and height: {w} x {h}, final size will be {w*f} x {h*f}")
 
 ow = img.width
 oh = img.height
@@ -175,7 +175,7 @@ img.close()
 img.destroy()
 
 #Last upscayl step
-print(f"=> Upscayling to maximum size of {w*4} x {h*4}...")
+print(f"=> Upscayling to maximum size of {w*f} x {h*f}...")
 uifn = args.filename.rpartition('.')[0] + '_tmp.png'
 uofn = args.filename.rpartition('.')[0] + '_upscayl.png'
 if args.upscayl_enable_tta_fin:
@@ -198,7 +198,7 @@ print(f"=> Written {uofn}")
 if args.no_jpegli == False:
     print(f"=> Recompressing the PNG with JPEGLI...")
     jifn = uofn
-    jofn = args.filename.rpartition('.')[0] + '_upscayl.jpg'7
+    jofn = args.filename.rpartition('.')[0] + '_upscayl.jpg'
     #cjxl and cjpegli have removed PNG support, subsequently the following line was changed to use image magick to pipe the png into cjpegli as ppm instead.
     jcmd = f"magick \"{jifn}\" ppm:- | cjpegli - -q {args.jpegli_quality} -p {args.jpegli_progressive} --chroma_subsampling={args.jpegli_yuv_format} \"{jofn}\""
     if args.jpegli_verbose == False:
