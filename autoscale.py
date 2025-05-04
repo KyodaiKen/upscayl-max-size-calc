@@ -124,9 +124,9 @@ if w*h>ow*oh:
 
         print(f"(i) Upscayl iterations needed: {iterations}")
 
-        if iterations > 3:
-            print(colored("(x) More than 3 upscayl iterations required. This is not advisable. Aborting...", 'light_red'))
-            os._exit(0x128)
+        #if iterations > 3:
+        #    print(colored("(x) More than 3 upscayl iterations required. This is not advisable. Aborting...", 'light_red'))
+        #    os._exit(0x128)
 
         for i in range(1, iterations+1):
             print(f"=> Running Upscayl iteration {i}...")
