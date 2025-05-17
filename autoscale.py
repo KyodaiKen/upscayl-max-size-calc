@@ -21,6 +21,7 @@ parser.add_argument("-sr", "--sharpen-radius", help="Sharpen radius (default=0.8
 parser.add_argument("-ss", "--sharpen-sigma", help="Sharpen sigma (default=33)", type=float, default=33.0, required=False)
 parser.add_argument('--no-auto-upscayl', action="store_true", help="Disables the automatic upscaling using upscayl (requires upscayl-bin in PATH)")
 parser.add_argument("-d", "--upscayl-model-dir", help="Specify the upscayl model directory", type=str, default="auto", required=False)
+parser.add_argument("-pm", "--prescale-upscayl-model", help="Select the prescale upscayl model (default=digital-art-4x)", type=str, default="digital-art-4x", required=False)
 parser.add_argument("-m", "--upscayl-model", help="Select the upscayl model (default=digital-art-4x)", type=str, default="digital-art-4x", required=False)
 parser.add_argument("-ttap", "--upscayl-enable-tta-pre", action="store_true", help="Enable TTA mode for pre-upscayle")
 parser.add_argument("-ttaf", "--upscayl-enable-tta-fin", action="store_true", help="Enable TTA mode for final upscayl")
@@ -88,14 +89,14 @@ while ((w+1)*f*((w+1)/a)*f*bpp<=maxSz):
 w=math.floor(w)
 h=math.floor(h)
 
-print(f"=> Determined new width and height: {w} x {h}, final size will be {w*f} x {h*f}")
+print(f"=> Determined new width and height: {w} x {h}, final size will be {w*f:.0F} x {h*f:.0F}")
 
 ow = img.width
 oh = img.height
 
 ret_code = 999999
 if w*h>ow*oh:
-    print(colored("/!\ Input image is too small, it needs to be upscaled first.", 'light_yellow'))
+    print(colored("/!\\ Input image is too small, it needs to be upscaled first.", 'light_yellow'))
     if args.no_auto_upscayl == False:
         uifn = args.filename
         uofn = args.filename.rpartition('.')[0] + '_utmp2.png'
@@ -132,9 +133,9 @@ if w*h>ow*oh:
             print(f"=> Running Upscayl iteration {i}...")
             uofn = args.filename.rpartition('.')[0] + f'_utmp{i}.png'
             if args.upscayl_enable_tta_pre:
-                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1 -x"
+                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.prescale_upscayl_model} -s {f} -c 1 -x"
             else:
-                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.upscayl_model} -s {f} -c 1"
+                ucmd = f"upscayl-bin -i \"{uifn}\" -o \"{uofn}\" -m \"{model_dir}\" -n {args.prescale_upscayl_model} -s {f} -c 1"
             if args.upscayl_verbose == False:
                 with open(os.devnull, 'w') as fnull:
                     ret_code = subprocess.call(ucmd, shell=True, stdout=fnull, stderr=fnull)
@@ -175,7 +176,7 @@ img.close()
 img.destroy()
 
 #Last upscayl step
-print(f"=> Upscayling to maximum size of {w*f} x {h*f}...")
+print(f"=> Upscayling to maximum size of {w*f:.0F} x {h*f:.0F}...")
 uifn = args.filename.rpartition('.')[0] + '_tmp.png'
 uofn = args.filename.rpartition('.')[0] + '_upscayl.png'
 if args.upscayl_enable_tta_fin:
