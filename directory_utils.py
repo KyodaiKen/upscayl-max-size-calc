@@ -1,5 +1,10 @@
 import os
 import glob
+from pathlib import Path
+
+def not_already_upscayled(filename):
+    stem = Path(filename).stem
+    return not(Path(f"{stem}_upscayl.jpg").is_file()) and not(Path(f"{stem}_upscayl.png").is_file())
 
 def find_files(directory, pattern, recursive=False):
     """
@@ -25,9 +30,9 @@ def find_files(directory, pattern, recursive=False):
     if recursive:
         for root, _, files in os.walk(directory):
             for filename in files:
+                full_path = os.path.join(root, filename)
                 for pat in patterns:
-                    if glob.fnmatch.fnmatch(filename, pat.strip()):
-                        full_path = os.path.join(root, filename)
+                    if glob.fnmatch.fnmatch(filename, pat.strip()) and not(filename.startswith('.')) and "_upscayl." not in filename.lower() and not_already_upscayled(full_path):
                         found_files.add(full_path)
                         break  # Once a match is found for a file, no need to check other patterns
     else:
@@ -35,7 +40,7 @@ def find_files(directory, pattern, recursive=False):
             full_path = os.path.join(directory, filename)
             if os.path.isfile(full_path):
                 for pat in patterns:
-                    if glob.fnmatch.fnmatch(filename, pat.strip()):
+                    if glob.fnmatch.fnmatch(filename, pat.strip()) and not(filename.startswith('.')) and "_upscayl." not in filename.lower() and not_already_upscayled(full_path):
                         found_files.add(full_path)
                         break  # Once a match is found for a file, no need to check other patterns
 
