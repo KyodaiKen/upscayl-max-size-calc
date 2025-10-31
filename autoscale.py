@@ -54,7 +54,7 @@ else:
 library.MagickSetCompressionQuality.argtypes = [c_void_p, c_size_t]
 
 # Maximum size Upscayl currently supports
-maxSz = int(pow(2,32)/2)-1
+maxSz = 2147483647
 
 # Load image
 img = wand.image.Image(filename=args.filename)
@@ -82,7 +82,7 @@ h = 0
 f = args.scale_factor
 a = img.width/img.height
 
-while ((w+1)*f*((w+1)/a)*f*bpp<=maxSz):
+while ((w+1)*f*((w+1)/a)*f*bpp<maxSz):
     w+=1
     h=w/a
 
