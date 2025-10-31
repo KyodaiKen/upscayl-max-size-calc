@@ -54,7 +54,7 @@ else:
 library.MagickSetCompressionQuality.argtypes = [c_void_p, c_size_t]
 
 # Maximum size Upscayl currently supports
-maxSz = pow(2,31)-1
+maxSz = int(pow(2,32))/2-1
 
 # Load image
 img = wand.image.Image(filename=args.filename)
